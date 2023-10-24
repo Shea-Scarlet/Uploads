@@ -62,7 +62,7 @@ static esp_err_t shtc3_read_data(float *temperature, float *humidity) {
     
     // Calculate temperature (in degrees Celsius) from the data
     int temp_raw = (data[0] << 8) | data[1];
-    *temperature = -45 + 175.0 * (temp_raw / 65535.0);
+    *temperature = 175.0 * (temp_raw / 65535.0) -45;
     
     // Calculate humidity (in percentage) from the data
     int hum_raw = (data[3] << 8) | data[4];
@@ -86,7 +86,7 @@ void app_main() {
         // Read temperature and humidity
         ret = shtc3_read_data(&temperature, &humidity);
         if (ret == ESP_OK) {
-            printf("Temperature is %.1fC (or %.1fF) with a %.0f%% humidity\n",
+            printf("Temperature is %.0fC (or %.0fF) with a %0.f%% humidity\n",
                    temperature, (temperature * 9 / 5 + 32), humidity);
         } else {
             printf("Failed to read data from SHTC3\n");
