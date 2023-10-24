@@ -88,6 +88,7 @@ uint16_t read_sensor_data(float* temperature, float* humidity){
     *humidity = 100.0 * ((float)humi / 65535.0);
     
     return true;
+	
 }
 
 void app_main(void) {
