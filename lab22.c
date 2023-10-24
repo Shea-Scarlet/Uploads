@@ -96,7 +96,7 @@ void app_main(void) {
 
     // Initialize I2C
     initialize_i2c();
-    read_sensor_data(&temperature, &humidity)
+    read_sensor_data(&temperature, &humidity);
 
     while (1) {
         // Read temperature and humidity
