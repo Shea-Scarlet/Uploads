@@ -23,6 +23,8 @@ static esp_err_t i2c_master_init(void) {
         .scl_io_num = I2C_MASTER_SCL_IO,
         .master.clk_speed = I2C_MASTER_FREQ_HZ,
     };
+    i2c_param_config(I2C_MASTER_NUM, &conf);
+	i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
     return i2c_param_config(I2C_MASTER_NUM, &conf);
 }
 
