@@ -81,11 +81,11 @@ uint16_t read_sensor_data(float* temperature, float* humidity){
     
     // Calculate temperature (in degrees Celsius) from the data
     uint16_t temp = (data[0] << 8) | data[1];
-    *temperature = 175.0 * (float(temp) / 65535.0) -45;
+    *temperature = 175.0 * ((float)temp / 65535.0) -45;
     
     // Calculate humidity (in percentage) from the data
     uint16_t humi = (data[3] << 8) | data[4];
-    *humidity = 100.0 * (float(humi) / 65535.0);
+    *humidity = 100.0 * ((float)humi / 65535.0);
     
     return true;
 }
