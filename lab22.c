@@ -16,20 +16,26 @@
 #define SHTC3_I2C_ADDR              0x70
 
 // Function to initialize I2C
-static esp_err_t i2c_master_init(void) {
+void initialize_i2c () {
     i2c_config_t conf = {
         .mode = I2C_MODE_MASTER,
         .sda_io_num = I2C_MASTER_SDA_IO,
         .scl_io_num = I2C_MASTER_SCL_IO,
         .master.clk_speed = I2C_MASTER_FREQ_HZ,
+	.sda_pullup_en = GPIO_PULLUP_ENABLE,
+	.scl_pullup_en = GPIO_PULLUP_ENABLE,
     };
     i2c_param_config(I2C_MASTER_NUM, &conf);
-	i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
-    return i2c_param_config(I2C_MASTER_NUM, &conf);
+    i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
 // Function to read temperature and humidity from SHTC3
-static esp_err_t shtc3_read_data(float *temperature, float *humidity) {
+uint16_t read_sensor_data(float* temperature, float* humidity){
+
+    // Read 6 bytes for temperature and humidity data
+    uint8_t data[6];
+    uint8_t TEMP[2] = {0x7C, 0xA2};
+	
     i2c_cmd_handle_t cmd = i2c_cmd_link_create();
     
     // Send start condition
@@ -39,59 +45,61 @@ static esp_err_t shtc3_read_data(float *temperature, float *humidity) {
     i2c_master_write_byte(cmd, (SHTC3_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
     
     // Request temperature measurement
-    i2c_master_write_byte(cmd, 0x35, true);
-    
-    // Delay for measurement
-    vTaskDelay(pdMS_TO_TICKS(15));
-    
-    // Read 6 bytes for temperature and humidity data
-    uint8_t data[6];
-    i2c_master_read(cmd, data, 6, I2C_MASTER_LAST_NACK);
-    
+    i2c_master_write(cmd, TEMP, 2, true);
+
     // Stop condition
     i2c_master_stop(cmd);
-    
+
     // Execute the I2C command
-    esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
-    
+    i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
+
+    //delete
     i2c_cmd_link_delete(cmd);
+
+	
+    cmd = i2c_cmd_link_create();
     
-    if (ret != ESP_OK) {
-        return ret;
-    }
+    // Send start condition
+    i2c_master_start(cmd);
+    
+    // Write the SHTC3's I2C address with a write bit
+    i2c_master_write_byte(cmd, (SHTC3_I2C_ADDR << 1) | I2C_MASTER_READ, true);
+    
+    // Read temperature measurement
+    i2c_master_read(cmd, data, sizeof(data) - 1, I2C_MASTER_ACK);
+    i2c_master_read_byte(cmd, &data[sizeof(data) - 1], I2C_MASTER_NACK);
+
+    // Stop condition
+    i2c_master_stop(cmd);
+
+    // Execute the I2C command
+    i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 1000 / portTICK_PERIOD_MS);
+
+    //delete
+    i2c_cmd_link_delete(cmd);
+
     
     // Calculate temperature (in degrees Celsius) from the data
-    int temp_raw = (data[0] << 8) | data[1];
-    *temperature = 175.0 * (temp_raw / 65535.0) -45;
+    uint16_t temp = (data[0] << 8) | data[1];
+    *temperature = 175.0 * (float(temp) / 65535.0) -45;
     
     // Calculate humidity (in percentage) from the data
-    int hum_raw = (data[3] << 8) | data[4];
-    *humidity = 100.0 * (hum_raw / 65535.0);
+    uint16_t humi = (data[3] << 8) | data[4];
+    *humidity = 100.0 * (float(humi) / 65535.0);
     
-    return ESP_OK;
+    return true;
 }
 
-void app_main() {
-    esp_err_t ret;
+void app_main(void) {
     float temperature, humidity;
 
     // Initialize I2C
-    ret = i2c_master_init();
-    if (ret != ESP_OK) {
-        printf("I2C initialization failed\n");
-        return;
-    }
+    initialize_i2c();
+    read_sensor_data(&temperature, &humidity)
 
     while (1) {
         // Read temperature and humidity
-        ret = shtc3_read_data(&temperature, &humidity);
-        if (ret == ESP_OK) {
-            printf("Temperature is %.0fC (or %.0fF) with a %0.f%% humidity\n",
-                   temperature, (temperature * 9 / 5 + 32), humidity);
-        } else {
-            printf("Failed to read data from SHTC3\n");
-        }
-
+        printf("Temperature is %.0fC (or %.0fF) with a %0.f%% humidity\n", temperature, (temperature * 9 / 5 + 32), humidity);
         vTaskDelay(pdMS_TO_TICKS(2000));  // Delay for 2 seconds
     }
 }
