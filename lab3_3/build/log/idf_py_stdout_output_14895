@@ -1,0 +1,10 @@
+-- IDF_TARGET not set, using default target: esp32
+-- Found Git: /usr/bin/git (found version "2.34.1") 
+-- The C compiler identification is unknown
+-- The CXX compiler identification is unknown
+-- The ASM compiler identification is unknown
+-- Found assembler: xtensa-esp32-elf-gcc
+-- Warning: Did not find file Compiler/-ASM
+-- Configuring incomplete, errors occurred!
+See also "/home/ubuntu/esp/lab3_3/build/CMakeFiles/CMakeOutput.log".
+See also "/home/ubuntu/esp/lab3_3/build/CMakeFiles/CMakeError.log".
