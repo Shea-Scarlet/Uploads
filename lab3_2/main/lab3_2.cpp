@@ -23,6 +23,7 @@ extern "C" {
         lcd.init();
         lcd.setRGB(0, 255, 0);
         while (1) {
+            lcd.cursor(0, 0);
             lcd.printstr("Hello CSE121!");
             lcd.cursor(0, 1);
             lcd.printstr("Loro");
