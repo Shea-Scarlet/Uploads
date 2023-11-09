@@ -29,44 +29,58 @@ void initialize_i2c () {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
+
 static const char* TAG = "InclinationSensor";
 
 void app_main(void)
 {
-    // Initialize your ICM-42670-P sensor here, configure it, and set up the I2C or SPI interface.
-    initialize_i2c();
+    // Initialize your ICM-42670-P sensor here and configure it.
+	initialize_i2c();
+    // Replace with actual initialization and configuration code.
 
     while (1)
     {
-        // Read sensor data and calculate inclination.
-        float inclination_x = /* Calculate inclination in X direction */;
-        float inclination_y = /* Calculate inclination in Y direction */;
+        // Read accelerometer data from the sensor.
+        int16_t accelerometer_data[3];
+        // Read accelerometer data from the sensor using your driver.
+        // You might need to adapt this part to your specific driver.
+        if (read_accelerometer_data(accelerometer_data) != ESP_OK) {
+            ESP_LOGE(TAG, "Failed to read accelerometer data");
+            continue;
+        }
+
+        // Calculate inclinations based on accelerometer data.
+        float acceleration_x = accelerometer_data[0] / 16384.0; // Replace with your sensor's specific scale factor.
+        float acceleration_y = accelerometer_data[1] / 16384.0; // Replace with your sensor's specific scale factor.
 
         // Determine the inclination based on sensor data.
-        const char* inclination_str = "UNKNOWN";
+        const char* inclination_x_str = "UNKNOWN";
+        const char* inclination_y_str = "UNKNOWN";
 
-        if (inclination_x > 0.5) {
-            inclination_str = "UP";
-        } else if (inclination_x < -0.5) {
-            inclination_str = "DOWN";
+        if (acceleration_x > 0.5) {
+            inclination_x_str = "RIGHT";
+        } else if (acceleration_x < -0.5) {
+            inclination_x_str = "LEFT";
         }
 
-        if (inclination_y > 0.5) {
-            if (inclination_str == "UNKNOWN") {
-                inclination_str = "LEFT";
-            } else {
-                inclination_str = "UP LEFT";
-            }
-        } else if (inclination_y < -0.5) {
-            if (inclination_str == "UNKNOWN") {
-                inclination_str = "RIGHT";
-            } else {
-                inclination_str = "UP RIGHT";
-            }
+        if (acceleration_y > 0.5) {
+            inclination_y_str = "UP";
+        } else if (acceleration_y < -0.5) {
+            inclination_y_str = "DOWN";
         }
 
-        // Print the inclination to the terminal using ESP_LOGI.
-        ESP_LOGI(TAG, "Board inclination: %s", inclination_str);
+        // Print the inclinations to the terminal using ESP_LOGI.
+        if (strcmp(inclination_x_str, "UNKNOWN") == 0 && strcmp(inclination_y_str, "UNKNOWN") == 0) {
+            ESP_LOGI(TAG, "Inclination: UNKNOWN");
+        } else if (strcmp(inclination_x_str, "UNKNOWN") == 0) {
+            ESP_LOGI(TAG, "Inclination: %s", inclination_y_str);
+        } else if (strcmp(inclination_y_str, "UNKNOWN") == 0) {
+            ESP_LOGI(TAG, "Inclination: %s", inclination_x_str);
+        } else {
+            ESP_LOGI(TAG, "Combined Inclination: %s %s", inclination_y_str, inclination_x_str);
+        }
+
+        vTaskDelay(1000 / portTICK_PERIOD_MS); // Adjust the delay as needed.
 
         vvTaskDelay(pdMS_TO_TICKS(1000)); // Adjust the delay as needed.
     }
