@@ -3,6 +3,7 @@
 #include "esp_system.h"
 #include "driver/i2c.h"
 #include "math.h"
+#include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -54,8 +55,8 @@ void app_main(void)
         float acceleration_y = accelerometer_data[1] / 16384.0; // Replace with your sensor's specific scale factor.
 
         // Determine the inclination based on sensor data.
-        const char* inclination_x_str = "UNKNOWN";
-        const char* inclination_y_str = "UNKNOWN";
+        char* inclination_x_str = "UNKNOWN";
+        char* inclination_y_str = "UNKNOWN";
 
         if (acceleration_x > 0.5) {
             inclination_x_str = "RIGHT";
@@ -69,19 +70,34 @@ void app_main(void)
             inclination_y_str = "DOWN";
         }
 
-        // Print the inclinations to the terminal using ESP_LOGI.
-        if (strcmp(inclination_x_str, "UNKNOWN") == 0 && strcmp(inclination_y_str, "UNKNOWN") == 0) {
-            ESP_LOGI(TAG, "Inclination: UNKNOWN");
-        } else if (strcmp(inclination_x_str, "UNKNOWN") == 0) {
-            ESP_LOGI(TAG, "Inclination: %s", inclination_y_str);
-        } else if (strcmp(inclination_y_str, "UNKNOWN") == 0) {
-            ESP_LOGI(TAG, "Inclination: %s", inclination_x_str);
+        // Determine the inclination based on sensor data and print directly.
+        if (acceleration_x > 0.5) {
+        	if (acceleration_y > 0.5) {
+                    ESP_LOGI(TAG, "Inclination: UP RIGHT");
+                } else if (acceleration_y < -0.5) {
+                    ESP_LOGI(TAG, "Inclination: DOWN RIGHT");
+                } else {
+                    ESP_LOGI(TAG, "Inclination: RIGHT");
+                }
+        } else if (acceleration_x < -0.5) {
+                if (acceleration_y > 0.5) {
+                    ESP_LOGI(TAG, "Inclination: UP LEFT");
+                } else if (acceleration_y < -0.5) {
+                    ESP_LOGI(TAG, "Inclination: DOWN LEFT");
+                } else {
+                    ESP_LOGI(TAG, "Inclination: LEFT");
+                }
+	} else if (acceleration_y > 0.5) {
+                ESP_LOGI(TAG, "Inclination: UP");
+            } else if (acceleration_y < -0.5) {
+                ESP_LOGI(TAG, "Inclination: DOWN");
+            } else {
+                ESP_LOGI(TAG, "Inclination: UNKNOWN");
+            }
         } else {
-            ESP_LOGI(TAG, "Combined Inclination: %s %s", inclination_y_str, inclination_x_str);
+            ESP_LOGE(TAG, "Invalid accelerometer data");
         }
 
-        vTaskDelay(1000 / portTICK_PERIOD_MS); // Adjust the delay as needed.
-
-        vvTaskDelay(pdMS_TO_TICKS(1000)); // Adjust the delay as needed.
+        vTaskDelay(pdMS_TO_TICKS(1000)); // Adjust the delay as needed.
     }
 }
