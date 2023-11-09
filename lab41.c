@@ -58,6 +58,7 @@ void app_main(void)
         char* inclination_x_str = "UNKNOWN";
         char* inclination_y_str = "UNKNOWN";
 
+	    /*/
         if (acceleration_x > 0.5) {
             inclination_x_str = "RIGHT";
         } else if (acceleration_x < -0.5) {
@@ -69,6 +70,7 @@ void app_main(void)
         } else if (acceleration_y < -0.5) {
             inclination_y_str = "DOWN";
         }
+	    /*/
 
         // Determine the inclination based on sensor data and print directly.
         if (acceleration_x > 0.5) {
