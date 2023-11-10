@@ -16,6 +16,12 @@
 // SHTC3 I2C Address
 #define SHTC3_I2C_ADDR              0x70
 
+// ICM I2C Address
+#define ICM42670_P_I2C_ADDR 0x68 // Replace with the correct I2C address
+#define REGISTER_TO_READ_WRITE 0x01 // Replace with the register address
+
+void initialize_i2c () {
+/*/
 // Function to initialize I2C
 void initialize_i2c () {
     i2c_config_t conf = {
@@ -28,10 +34,62 @@ void initialize_i2c () {
     };
     i2c_param_config(I2C_MASTER_NUM, &conf);
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
+/*/
+
+    // Configuration for I2C
+    i2c_config_t conf;
+    conf.mode = I2C_MODE_MASTER;
+    conf.sda_io_num = I2C_MASTER_SDA_IO; // Replace with your SDA pin number
+    conf.scl_io_num = I2C_MASTER_SCL_IO; // Replace with your SCL pin number
+    conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ; // Set the desired I2C clock speed
+
+    i2c_param_config(I2C_MASTER_NUM, &conf);
+    i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
+
+    // Read a byte from the ICM-42670-P register
+    uint8_t data;
+    i2c_cmd_handle_t cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ICM42670_P_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, REGISTER_TO_READ_WRITE, true);
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ICM42670_P_I2C_ADDR << 1) | I2C_MASTER_READ, true);
+    i2c_master_read_byte(cmd, &data, I2C_MASTER_NACK);
+    i2c_master_stop(cmd);
+    esp_err_t ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C read error: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "Read data: 0x%02X", data);
+    }
+
+    // Write a byte to the ICM-42670-P register
+    uint8_t data_to_write = 0xAB; // Replace with the data you want to write
+    cmd = i2c_cmd_link_create();
+    i2c_master_start(cmd);
+    i2c_master_write_byte(cmd, (ICM42670_P_I2C_ADDR << 1) | I2C_MASTER_WRITE, true);
+    i2c_master_write_byte(cmd, REGISTER_TO_READ_WRITE, true);
+    i2c_master_write_byte(cmd, data_to_write, true);
+    i2c_master_stop(cmd);
+    ret = i2c_master_cmd_begin(I2C_NUM_0, cmd, 1000 / portTICK_RATE_MS);
+    i2c_cmd_link_delete(cmd);
+
+    if (ret != ESP_OK) {
+        ESP_LOGE(TAG, "I2C write error: %s", esp_err_to_name(ret));
+    } else {
+        ESP_LOGI(TAG, "Write data: 0x%02X", data_to_write);
+    }
+
+    // Deinitialize the I2C bus when done
+    i2c_driver_delete(I2C_NUM_0);
+	
 }
 
-
-static const char* TAG = "InclinationSensor";
+static const char *TAG = "ICM42670_P";
 
 void app_main(void)
 {
