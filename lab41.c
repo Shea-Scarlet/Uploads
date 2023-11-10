@@ -20,6 +20,8 @@
 #define ICM42670_P_I2C_ADDR 0x68 // Replace with the correct I2C address
 #define REGISTER_TO_READ_WRITE 0x01 // Replace with the register address
 
+static const char *TAG = "ICM42670_P";
+
 void initialize_i2c () {
 /*/
 // Function to initialize I2C
@@ -39,11 +41,11 @@ void initialize_i2c () {
     // Configuration for I2C
     i2c_config_t conf;
     conf.mode = I2C_MODE_MASTER;
-    conf.sda_io_num = I2C_MASTER_SDA_IO; // Replace with your SDA pin number
-    conf.scl_io_num = I2C_MASTER_SCL_IO; // Replace with your SCL pin number
+    conf.sda_io_num = I2C_MASTER_SDA_IO;
+    conf.scl_io_num = I2C_MASTER_SCL_IO;
     conf.sda_pullup_en = GPIO_PULLUP_ENABLE;
     conf.scl_pullup_en = GPIO_PULLUP_ENABLE;
-    conf.master.clk_speed = I2C_MASTER_FREQ_HZ; // Set the desired I2C clock speed
+    conf.master.clk_speed = I2C_MASTER_FREQ_HZ;
 
     i2c_param_config(I2C_MASTER_NUM, &conf);
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
@@ -89,13 +91,10 @@ void initialize_i2c () {
 	
 }
 
-static const char *TAG = "ICM42670_P";
-
 void app_main(void)
 {
     // Initialize your ICM-42670-P sensor here and configure it.
-	initialize_i2c();
-    // Replace with actual initialization and configuration code.
+    initialize_i2c();
 
     while (1)
     {
