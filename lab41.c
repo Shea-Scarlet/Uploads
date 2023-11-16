@@ -178,8 +178,6 @@ void app_main(void)
                 printf("Inclination: DOWN");
         } else {
                 printf("Inclination: UNKNOWN");
-        } else {
-            printf("Invalid accelerometer data");
         }
 
 	vTaskDelay(100/portTICK_PERIOD_MS);
