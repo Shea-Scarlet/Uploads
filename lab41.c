@@ -34,7 +34,7 @@
 // ICM I2C Address
 //#define REGISTER_TO_READ_WRITE 0x01
 
-static const char *TAG = "ICM42670_P";
+//static const char *TAG = "ICM42670_P";
 
 void initialize_i2c () {
 // Function to initialize I2C
@@ -78,7 +78,7 @@ uint8_t read_byte_i2c (uint8_t read) {
     }
 /*/
 
-uint8_t write_byte_i2c (uint8_t read, uint8_t data_to_write) {
+void write_byte_i2c (uint8_t read, uint8_t data_to_write) {
 
     // Write a byte to the ICM-42670-P register
     //uint8_t data_to_write = 0xAB; // Replace with the data you want to write
@@ -162,7 +162,7 @@ void app_main(void)
                 } else if (acceleration_y < -1500) {
                     printf("Inclination: DOWN RIGHT");
                 } else {
-                    printf(T"Inclination: RIGHT");
+                    printf("Inclination: RIGHT");
                 }
         } else if (acceleration_x < -1500) {
                 if (acceleration_y > 1500) {
