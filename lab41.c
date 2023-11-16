@@ -6,6 +6,7 @@
 #include <string.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "esp_timer.h"
 
 // I2C configurations
 #define I2C_MASTER_NUM              I2C_NUM_0
@@ -13,8 +14,22 @@
 #define I2C_MASTER_SDA_IO           10        // GPIO pin for SDA
 #define I2C_MASTER_FREQ_HZ          100000    // I2C master clock frequency
 
+#define PWR_CONFIG 0x1F
+#define PWR_SETTINGS 12
+
+#define IMU_ADDR 0x68
+
+#define GYRO_DATA_X1 0x11
+#define GYRO_DATA_X0 0x12
+#define GYRO_DATA_Y1 0x13
+#define GYRO_DATA_Y0 0x14
+
+#define GYRO_CONFIG 0x20
+#define GYRO_SETTINGS 108
+#define GYRO_THRESH 1500
+
 // SHTC3 I2C Address
-#define SHTC3_I2C_ADDR              0x70
+//#define SHTC3_I2C_ADDR              0x70
 
 // ICM I2C Address
 #define ICM42670_P_I2C_ADDR 0x68 // Replace with the correct I2C address
