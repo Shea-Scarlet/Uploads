@@ -34,7 +34,7 @@
 // ICM I2C Address
 //#define REGISTER_TO_READ_WRITE 0x01
 
-//static const char *TAG = "ICM42670_P";
+static const char *TAG = "ICM42670_P";
 
 void initialize_i2c () {
 // Function to initialize I2C
@@ -64,7 +64,7 @@ uint8_t read_byte_i2c (uint8_t read) {
     i2c_master_read_byte(cmd, &data, I2C_MASTER_NACK);
 	
     i2c_master_stop(cmd);
-    esp_err_t ret = i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 2000 / portTICK_PERIOD_MS);
+    i2c_master_cmd_begin(I2C_MASTER_NUM, cmd, 2000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     return data;
@@ -89,7 +89,7 @@ uint8_t write_byte_i2c (uint8_t read, uint8_t data_to_write) {
     i2c_master_write_byte(cmd, read, true);
     i2c_master_write_byte(cmd, data_to_write, true);
     i2c_master_stop(cmd);
-    i2c_master_cmd_begin(I2C_NUM_0, cmd, 2000 / portTICK_RATE_MS);
+    i2c_master_cmd_begin(I2C_NUM_0, cmd, 2000 / portTICK_PERIOD_MS);
     i2c_cmd_link_delete(cmd);
 
     /*/
@@ -119,8 +119,8 @@ void app_main(void)
     while(1)
     {
 	
-    	int16_t acceleration_x = (i2c_read_byte(ACCEL_DATA_X1) << 8) | i2c_read_byte(ACCEL_DATA_X0);
-    	int16_t acceleration_y = (i2c_read_byte(ACCEL_DATA_Y1) << 8) | i2c_read_byte(ACCEL_DATA_Y0);
+    	int16_t acceleration_x = (read_byte_i2c(ACCEL_DATA_X1) << 8) | read_byte_i2c(ACCEL_DATA_X0);
+    	int16_t acceleration_y = (read_byte_i2c(ACCEL_DATA_Y1) << 8) | read_byte_i2c(ACCEL_DATA_Y0);
 
         // Read accelerometer data from the sensor.
         // int16_t accelerometer_data[3];
@@ -158,29 +158,28 @@ void app_main(void)
         // Determine the inclination based on sensor data and print directly.
         if (acceleration_x > 1500) {
         	if (acceleration_y > 1500) {
-                    ESP_LOGI(TAG, "Inclination: UP RIGHT");
+                    printf("Inclination: UP RIGHT");
                 } else if (acceleration_y < -1500) {
-                    ESP_LOGI(TAG, "Inclination: DOWN RIGHT");
+                    printf("Inclination: DOWN RIGHT");
                 } else {
-                    ESP_LOGI(TAG, "Inclination: RIGHT");
+                    printf(T"Inclination: RIGHT");
                 }
         } else if (acceleration_x < -1500) {
                 if (acceleration_y > 1500) {
-                    ESP_LOGI(TAG, "Inclination: UP LEFT");
+                    printf("Inclination: UP LEFT");
                 } else if (acceleration_y < -1500) {
-                    ESP_LOGI(TAG, "Inclination: DOWN LEFT");
+                    printf("Inclination: DOWN LEFT");
                 } else {
-                    ESP_LOGI(TAG, "Inclination: LEFT");
+                    printf("Inclination: LEFT");
                 }
 	} else if (acceleration_y > 1500) {
-                ESP_LOGI(TAG, "Inclination: UP");
-            } else if (acceleration_y < -1500) {
-                ESP_LOGI(TAG, "Inclination: DOWN");
-            } else {
-                ESP_LOGI(TAG, "Inclination: UNKNOWN");
-            }
+                printf("Inclination: UP");
+        } else if (acceleration_y < -1500) {
+                printf("Inclination: DOWN");
         } else {
-            ESP_LOGE(TAG, "Invalid accelerometer data");
+                printf("Inclination: UNKNOWN");
+        } else {
+            printf("Invalid accelerometer data");
         }
 
 	vTaskDelay(100/portTICK_PERIOD_MS);
