@@ -17,7 +17,7 @@
 #define ECHO_PIN 		    0
 
 // Speed of sound in air at 20 degrees Celsius
-#define SOUND_SPEED_AT_20C 343.2
+#define SOUND_SPEED_AT_20C 34300.0
 
 // SHTC3 I2C Address
 #define SHTC3_I2C_ADDR              0x70
@@ -36,7 +36,6 @@ void initialize_i2c () {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
-/*/
 void init_ultrasonic_sensor() {
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << TRIG_PIN),
@@ -52,6 +51,7 @@ void init_ultrasonic_sensor() {
     };
     gpio_config(&echo);
 }
+
 /*/
 void init_ultrasonic_sensor() {
     gpio_config_t io_conf = {
@@ -63,6 +63,7 @@ void init_ultrasonic_sensor() {
     };
     gpio_config(&io_conf);
 }
+/*/
 
 // Function to read temperature and humidity from SHTC3
 uint16_t read_sensor_data(float* temperature, float* humidity){
@@ -127,17 +128,22 @@ uint16_t read_sensor_data(float* temperature, float* humidity){
 
 float measure_distance() {
     // Generate a 10us pulse to trigger the ultrasonic sensor
+    int time = 23000;
+    gpio_set_level(TRIG_PIN, 0);
+    esp_rom_delay_us(2);
     gpio_set_level(TRIG_PIN, 1);
     esp_rom_delay_us(10);
     gpio_set_level(TRIG_PIN, 0);
+	
     // Measure the time taken for the ultrasonic wave to return
-    while (gpio_get_level(ECHO_PIN) == 0) {}
     int64_t start = esp_timer_get_time();
-    while (gpio_get_level(ECHO_PIN) == 1) {}
-    int64_t end = esp_timer_get_time();
+    while (gpio_get_level(ECHO_PIN) == 0 && (esp_timer_get_time() - start) < time) {}
+    start = esp_timer_get_time();
+    while (gpio_get_level(ECHO_PIN) == 1 && (esp_timer_get_time() - start) < time) {}
+    int64_t end = esp_timer_get_time() - start;
 
     // Calculate distance using the speed of sound and the time taken
-    float distance = (end - start) * SOUND_SPEED_AT_20C / 2 / 1000000.0; // in cm
+    float distance = (end / 1000000.0) * SOUND_SPEED_AT_20C / 2; // in cm
     return distance;
 }
 
