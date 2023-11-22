@@ -36,11 +36,12 @@ void initialize_i2c () {
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
 }
 
+/*/
 void init_ultrasonic_sensor() {
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << TRIG_PIN),
         .mode = GPIO_MODE_OUTPUT,
-	.intr_type = (GPIO_INTR_DISABLE),
+	.intr_type = GPIO_INTR_DISABLE,
     };
     gpio_config(&io_conf);
 
@@ -50,6 +51,14 @@ void init_ultrasonic_sensor() {
         .intr_type = GPIO_INTR_POSEDGE,
     };
     gpio_config(&echo);
+}
+/*/
+void init_ultrasonic_sensor() {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << TRIG_PIN) | (1ULL << ECHO_PIN),
+        .mode = GPIO_MODE_OUTPUT,
+    };
+    gpio_config(&io_conf);
 }
 
 // Function to read temperature and humidity from SHTC3
