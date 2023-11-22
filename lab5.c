@@ -15,9 +15,6 @@
 #define I2C_MASTER_FREQ_HZ          100000    // I2C master clock frequency
 #define TRIG_PIN 		    1
 #define ECHO_PIN 		    0
-#define GPIO_MODE_INPUT
-#define GPIO_MODE_OUTPUT
-#define GPIO_INTR_POSEDGE
 
 // Speed of sound in air at 20 degrees Celsius
 #define SOUND_SPEED_AT_20C 343.2
@@ -60,6 +57,9 @@ void init_ultrasonic_sensor() {
     gpio_config_t io_conf = {
         .pin_bit_mask = (1ULL << TRIG_PIN) | (1ULL << ECHO_PIN),
         .mode = GPIO_MODE_OUTPUT,
+	.intr_type = GPIO_INTR_DISABLE,
+    	.pull_down_en = GPIO_PULLDOWN_DISABLE,
+    	.pull_up_en = GPIO_PULLUP_DISABLE,
     };
     gpio_config(&io_conf);
 }
