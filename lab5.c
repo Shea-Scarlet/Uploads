@@ -5,12 +5,19 @@
 #include "math.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "driver/gpio.h"
+#include "esp_timer.h"
 
 // I2C configurations
 #define I2C_MASTER_NUM              I2C_NUM_0
 #define I2C_MASTER_SCL_IO           8        // GPIO pin for SCL
 #define I2C_MASTER_SDA_IO           10        // GPIO pin for SDA
 #define I2C_MASTER_FREQ_HZ          100000    // I2C master clock frequency
+#define TRIG_PIN 		    1
+#define ECHO_PIN 		    0
+#define GPIO_MODE_INPUT
+#define GPIO_MODE_OUTPUT
+#define GPIO_INTR_POSEDGE
 
 // SHTC3 I2C Address
 #define SHTC3_I2C_ADDR              0x70
@@ -27,6 +34,22 @@ void initialize_i2c () {
     };
     i2c_param_config(I2C_MASTER_NUM, &conf);
     i2c_driver_install(I2C_MASTER_NUM, conf.mode, 0, 0, 0);
+}
+
+void init_ultrasonic_sensor() {
+    gpio_config_t io_conf = {
+        .pin_bit_mask = (1ULL << TRIG_PIN),
+        .mode = GPIO_MODE_OUTPUT,
+	.intr_type = (GPIO_INTR_DISABLE),
+    };
+    gpio_config(&io_conf);
+
+    gpio_config_t echo = {
+        .pin_bit_mask = (1ULL << ECHO_PIN),
+        .mode = GPIO_MODE_INPUT,
+        .intr_type = GPIO_INTR_POSEDGE,
+    };
+    gpio_config(&echo);
 }
 
 // Function to read temperature and humidity from SHTC3
@@ -90,17 +113,30 @@ uint16_t read_sensor_data(float* temperature, float* humidity){
     return true;
 }
 
-void app_main(void) {
-    float temperature, humidity;
+float measure_distance() {
+    // Generate a 10us pulse to trigger the ultrasonic sensor
+    gpio_set_level(TRIG_PIN, 1);
+    ets_delay_us(10);
+    gpio_set_level(TRIG_PIN, 0);
+    // Measure the time taken for the ultrasonic wave to return
+    while (gpio_get_level(ECHO_PIN) == 0) {}
+    int64_t start = esp_timer_get_time();
+    while (gpio_get_level(ECHO_PIN) == 1) {}
+    int64_t end = esp_timer_get_time();
 
-    // Initialize I2C
+    // Calculate distance using the speed of sound and the time taken
+    float distance = (end - start) * SOUND_SPEED_AT_20C / 2 / 1000000.0; // in cm
+    return distance;
+}
+
+void app_main (void) {
+    float temperature, distance;
     initialize_i2c();
-    read_sensor_data(&temperature, &humidity);
-
-    while (1) {
-        // Read temperature and humidity
+    init_ultrasonic_sensor();
+    while(1) {
         read_sensor_data(&temperature, &humidity);
-        printf("Temperature is %.0fC (or %.0fF) with a %0.f%% humidity\n", temperature, (temperature * 9 / 5 + 32), humidity);
-        vTaskDelay(pdMS_TO_TICKS(2000));  // Delay for 2 seconds
+        distance = measure_distance();
+        printf("Distance: %.0f cm at %.0fC\n", distance, temperature);
+        vTaskDelay(1000 / portTICK_PERIOD_MS);
     }
 }
