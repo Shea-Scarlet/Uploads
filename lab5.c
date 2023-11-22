@@ -19,6 +19,9 @@
 #define GPIO_MODE_OUTPUT
 #define GPIO_INTR_POSEDGE
 
+// Speed of sound in air at 20 degrees Celsius
+#define SOUND_SPEED_AT_20C 343.2
+
 // SHTC3 I2C Address
 #define SHTC3_I2C_ADDR              0x70
 
@@ -125,7 +128,7 @@ uint16_t read_sensor_data(float* temperature, float* humidity){
 float measure_distance() {
     // Generate a 10us pulse to trigger the ultrasonic sensor
     gpio_set_level(TRIG_PIN, 1);
-    ets_delay_us(10);
+    esp_rom_delay_us(10);
     gpio_set_level(TRIG_PIN, 0);
     // Measure the time taken for the ultrasonic wave to return
     while (gpio_get_level(ECHO_PIN) == 0) {}
@@ -139,7 +142,7 @@ float measure_distance() {
 }
 
 void app_main (void) {
-    float temperature, distance;
+    float temperature, humidity, distance;
     initialize_i2c();
     init_ultrasonic_sensor();
     while(1) {
