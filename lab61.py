@@ -13,16 +13,16 @@ location = "Scotts+Valley"
 # Define the Weather Monitor HTTP request handler
 class WeatherMonitorHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-    if self.path == '/readfile/location.txt':
-        content_length = int(self.headers['Content-Length'])
-        post_data = self.rfile.read(content_length).decode('utf-8')
-        print(f"Received POST data: {post_data}")
-        self.send_response(200)
-        self.send_header('Content-type', 'text/plain') 
-        self.wfile.write("Data received by Weather Monitor".encode('utf-8'))
-    else:
-        self.send_response(404)
-        self.end_headers()
+        if self.path == '/readfile/location.txt':
+            content_length = int(self.headers['Content-Length'])
+            post_data = self.rfile.read(content_length).decode('utf-8')
+            print(f"Received POST data: {post_data}")
+            self.send_response(200)
+            self.send_header('Content-type', 'text/plain') 
+            self.wfile.write("Data received by Weather Monitor".encode('utf-8'))
+        else:
+            self.send_response(404)
+            self.end_headers()
 
 
     def do_POST(self):
