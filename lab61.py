@@ -24,7 +24,7 @@ class WeatherMonitorHandler(BaseHTTPRequestHandler):
             self.wfile.write("Data received by Weather Monitor".encode('utf-8'))
         elif self.path == "/get_weather":
             weather_response = requests.get(f'https://wttr.in/{location}?format=3')
-            if weather_response.status_code == 200;
+            if weather_response.status_code == 200
                 self.send_response(200)
                 self.send_header('Content-type', 'text/plain; charset=utf-8')
                 self.end_headers()
