@@ -14,14 +14,14 @@ weather_monitor_port = 1234
 class WeatherMonitorHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         if self.path == '/readfile/location.txt':
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length).decode('utf-8')
-            print(f"Received POST data: {post_data}")
+            # content_length = int(self.headers['Content-Length'])
+            # post_data = self.rfile.read(content_length).decode('utf-8')
+            # print(f"Received POST data: {post_data}")
             self.send_response(200)
             self.send_header('Content-type', 'text/plain') 
             self.end_headers()
             location = "Scotts+Valley\n"
-            self.wfile.write("Data received by Weather Monitor".encode('utf-8'))
+            self.wfile.write(location.encode())
         elif self.path == "/get_weather":
             weather_response = requests.get(f'https://wttr.in/{location}?format=3')
             if weather_response.status_code == 200:
@@ -43,9 +43,9 @@ class WeatherMonitorHandler(BaseHTTPRequestHandler):
             post_data = self.rfile.read(content_length).decode('utf-8')
     
             # Process the data (customize this part based on your needs)
-            location = post_data.split(":")[0]
-            temperature = post_data.split("T:")[1].split(",")[0]
-            humidity = post_data.split("H:")[1].split("%")[0]
+            # location = post_data.split(":")[0]
+            # temperature = post_data.split("T:")[1].split(",")[0]
+            # humidity = post_data.split("H:")[1].split("%")[0]
     
             # Generate the response string
             response = f"Received POST request:\n{post_data} \n"
