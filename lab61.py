@@ -4,7 +4,7 @@ import socketserver
 import subprocess
 
 # Set the IP address and port for the Weather Monitor (Web Server)
-weather_monitor_ip = "192.168.85.66"
+weather_monitor_ip = "192.168.157.66"
 weather_monitor_port = 1234
 
 # Set the location for the Weather Station
@@ -67,7 +67,7 @@ with socketserver.TCPServer((weather_monitor_ip, weather_monitor_port), WeatherM
         #pass
 
 # Set up the server with the handler and port
-server_address = ('192.168.85.66', 1234)
+server_address = ('192.168.157.66', 1234)
 httpd = HTTPServer(server_address, WeatherMonitorHandler)
 
 # Print a message indicating the server is running
