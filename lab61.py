@@ -55,7 +55,7 @@ class WeatherMonitorHandler(BaseHTTPRequestHandler):
 
 # Start the Weather Monitor Web Server
 with socketserver.TCPServer((weather_monitor_ip, weather_monitor_port), WeatherMonitorHandler) as httpd:
-print(f"Server started at http://{weather_monitor_ip}:{weather_monitor_port}")
+    print(f"Server started at http://{weather_monitor_ip}:{weather_monitor_port}")
 
     # Set up the Hotspot
     # hotspot_setup_command = f"sudo create_hotspot.sh {weather_monitor_ip} 255.255.255.0"
