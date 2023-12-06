@@ -81,11 +81,11 @@ def run(server_class = HTTPServer, handler_class = WeatherMonitorHandler, port=1
     server_address = ('172.20.10.2', port)
     httpd = server_class(server_address, handler_class)
 
-# Print a message indicating the server is running
-print(f'Starting Weather Monitor server on port {port}...')
-
-# Start the server
-httpd.serve_forever()
+    # Print a message indicating the server is running
+    print(f'Starting Weather Monitor server on port {port}...')
+    
+    # Start the server
+    httpd.serve_forever()
 
 # When the server is terminated, stop the Hotspot
 #hotspot_stop_command = "sudo stop_hotspot.sh"
