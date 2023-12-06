@@ -4,11 +4,11 @@ import socketserver
 import subprocess
 
 # Set the IP address and port for the Weather Monitor (Web Server)
-weather_monitor_ip = "192.168.157.66"
+weather_monitor_ip = "172.20.10.2"
 weather_monitor_port = 1234
 
 # Set the location for the Weather Station
-location = "Scotts+Valley"
+# location = "Scotts+Valley"
 
 # Define the Weather Monitor HTTP request handler
 class WeatherMonitorHandler(BaseHTTPRequestHandler):
@@ -19,11 +19,20 @@ class WeatherMonitorHandler(BaseHTTPRequestHandler):
             print(f"Received POST data: {post_data}")
             self.send_response(200)
             self.send_header('Content-type', 'text/plain') 
+            self.end_headers()
+            location = "Scotts+Valley\n"
             self.wfile.write("Data received by Weather Monitor".encode('utf-8'))
+        elif self.path == "/get_weather":
+            weather_response = requests.get(f'https://wttr.in/{location}?format=3')
+            if weather_response.status_code == 200;
+                self.send_response(200)
+                self.send_header('Content-type', 'text/plain; charset=utf-8')
+                self.end_headers()
+                self.wfile.write(weather_response.text.encode('utf-8'))
         else:
             self.send_response(404)
             self.end_headers()
-
+            self.wfile.write(b'Not Found')
 
     def do_POST(self):
         # Get the length of the incoming data
@@ -39,23 +48,24 @@ class WeatherMonitorHandler(BaseHTTPRequestHandler):
             humidity = post_data.split("H:")[1].split("%")[0]
     
             # Generate the response string
-            response = f"{post_data}: Outdoors T:47F, H:36%, Indoors T:70F, H:40%"
+            response = f"Received POST request:\n{post_data} \n"
     
             # Send the HTTP response
             self.send_response(200)
             self.send_header('Content-type', 'text/plain')
             self.end_headers()
-            self.wfile.write(response.encode('utf-8'))
+            self.wfile.write(response.encode())
         else:
             self.send_response(404)
             self.end_headers()
+            self.wfile.write(b'Not Found')
 
         # Print the received data for debugging purposes
-        print(f"Received POST data: {post_data}")
+        # print(f"Received POST data: {post_data}")
 
 # Start the Weather Monitor Web Server
-with socketserver.TCPServer((weather_monitor_ip, weather_monitor_port), WeatherMonitorHandler) as httpd:
-    print(f"Server started at http://{weather_monitor_ip}:{weather_monitor_port}")
+# with socketserver.TCPServer((weather_monitor_ip, weather_monitor_port), WeatherMonitorHandler) as httpd:
+    # print(f"Server started at http://{weather_monitor_ip}:{weather_monitor_port}")
 
     # Set up the Hotspot
     # hotspot_setup_command = f"sudo create_hotspot.sh {weather_monitor_ip} 255.255.255.0"
@@ -66,12 +76,13 @@ with socketserver.TCPServer((weather_monitor_ip, weather_monitor_port), WeatherM
     #except KeyboardInterrupt:
         #pass
 
-# Set up the server with the handler and port
-server_address = ('192.168.157.66', 1234)
-httpd = HTTPServer(server_address, WeatherMonitorHandler)
+def run(server_class = HTTPServer, handler_class = WeatherMonitorHandler, port=1234):
+    # Set up the server with the handler and port
+    server_address = ('172.20.10.2', port)
+    httpd = server_class(server_address, handler_class)
 
 # Print a message indicating the server is running
-print('Weather Monitor server is running on port 1234...')
+print(f'Starting Weather Monitor server on port {port}...')
 
 # Start the server
 httpd.serve_forever()
@@ -79,3 +90,5 @@ httpd.serve_forever()
 # When the server is terminated, stop the Hotspot
 #hotspot_stop_command = "sudo stop_hotspot.sh"
 #subprocess.run(hotspot_stop_command, shell=True)
+if __name__ == '__main__':
+    run()
